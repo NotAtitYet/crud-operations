@@ -30,17 +30,16 @@ export const getUserById = async (req, res) => {
 
 // CREATE a new user
 export const createUser = async (req, res) => {
-    const { Username, Email, Password } = req.body;
+    const { Username, Email, PasswordHash } = req.body;
     try {
-        const salt = await bcrypt.genSalt(10);
-        const PasswordHash = await bcrypt.hash(Password, salt);
-        const result = await sql.query`INSERT INTO Users (Username, Email, PasswordHash) VALUES (${Username}, ${Email}, ${PasswordHash})`;
-        res.status(201).json({ message: 'User created successfully', UserId: result.recordset.insertId });
+        const result = await sql.query`INSERT INTO Users (Username, Email, PasswordHash) VALUES (${Username}, ${Email}, ${PasswordHash});SELECT SCOPE_IDENTITY() AS UserId;`;
+        res.status(201).json({ message: 'User created successfully', UserId : result.recordset[0].UserId });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Error creating user' });
     }
 };
+
 // UPDATE a user
 export const updateUser = async (req, res) => {
     const { id } = req.params;
